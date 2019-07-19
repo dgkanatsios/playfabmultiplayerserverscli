@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Azure/azure-storage-blob-go v0.6.0
-	github.com/dgkanatsios/playfabsdk-go v0.0.0-20190217072346-279bfd3b25bc
+	github.com/dgkanatsios/playfabsdk-go v0.0.0-20190719075501-f664345409ed
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sirupsen/logrus v1.4.1
