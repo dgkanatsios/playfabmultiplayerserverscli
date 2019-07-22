@@ -11,7 +11,7 @@ gofmt:
 .PHONY: build
 build: gofmt
 	$(BUILD_ENV) GOOS=darwin GOARCH=386 $(GOBUILD) -o bin/macos/$(EXE_NAME)
-	$(BUILD_ENV) GOOS=linux GOARCH=386 $(GOBUILD) -o bin/linux/$(EXE_NAME)
+	$(BUILD_ENV) GOOS=linux GOARCH=amd64 $(GOBUILD) -o bin/linux/$(EXE_NAME)
 	$(BUILD_ENV) GOOS=windows GOARCH=386 $(GOBUILD) -o bin/windows/$(EXE_NAME).exe
 
 .PHONY: goget

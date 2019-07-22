@@ -21,8 +21,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-var titleID string
-var secretKey string
+var titleID *string
+var secretKey *string
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
@@ -35,12 +35,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if titleID == "" || secretKey == "" {
+		if *titleID == "" || *secretKey == "" {
 			fmt.Println("titleID and secretKey are required")
 			return
 		}
 
-		token, err := login(titleID, secretKey)
+		token, err := login(*titleID, *secretKey)
 
 		if err != nil {
 			fmt.Println("Error logging in")
@@ -62,8 +62,8 @@ to quickly create a Cobra application.`,
 func init() {
 	rootCmd.AddCommand(loginCmd)
 
-	loginCmd.Flags().StringVar(&titleID, "title", "", "Your Title ID")
+	titleID = loginCmd.Flags().StringP("title", "t", "", "Your Title ID")
 	loginCmd.MarkFlagRequired("title")
-	loginCmd.Flags().StringVar(&secretKey, "secret", "", "Your Title Secret")
+	secretKey = loginCmd.Flags().StringP("secret", "s", "", "Your Title Secret")
 	loginCmd.MarkFlagRequired("secret")
 }

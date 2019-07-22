@@ -18,19 +18,17 @@ import (
 	"log"
 
 	"github.com/dgkanatsios/playfabsdk-go/sdk/multiplayer"
+
+	"github.com/AlecAivazis/survey/v2"
+
 	"github.com/spf13/cobra"
 )
 
 // buildCreateCmd represents the create command
 var buildCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "creates a build",
+	Long:  `creates a PlayFab Multiplayer Servers build`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := createBuild()
 		if err != nil {
@@ -58,8 +56,44 @@ var ports *string
 var assetReferences *string
 var startCommand *string
 
+var qs = []*survey.Question{
+	{
+		Name: "serversPerVM",
+		Prompt: &survey.Input{
+			Message: "Number of servers per VM",
+			Help:    "Number of servers per VM",
+			Default: "1",
+		},
+	},
+	{
+		Name: "buildName",
+		Prompt: &survey.Input{
+			Message: "Build name",
+			Help:    "Build name",
+			Default: "MyCustomBuild",
+		},
+	},
+	{
+		Name: "startCommand",
+		Prompt: &survey.Input{
+			Message: "Start MultiplayerServer Command",
+			Help:    "Start MultiplayerServer Command",
+			Default: "C:\\Assets\\WindowsRunnerCSharp.exe",
+		},
+	},
+	{
+		Name: "startCommand",
+		Prompt: &survey.Select{
+			Message: "Virtual Machine Size",
+			Help:    "Virtual Machine Size",
+			Options: []string{"Standard_D1_v2", "Standard_D2_v2", "Standard_D3_v2", "Standard_D4_v2", "Standard_D5_v2"},
+		},
+	},
+}
+
 func createBuild() error {
-	settings, entityToken := getLoginSettings()
+	settings := getSettings()
+	entityToken := getEntityToken()
 	createBuildData := &multiplayer.CreateBuildWithManagedContainerRequestModel{
 		MultiplayerServerCountPerVm: 1,
 	}
@@ -71,7 +105,7 @@ func createBuild() error {
 	createBuildData.BuildName = "golangTest"
 	createBuildData.GameAssetReferences = []multiplayer.AssetReferenceParamsModel{
 		multiplayer.AssetReferenceParamsModel{
-			FileName:  "winrunnerSample.zip",
+			FileName:  "winrunnerSample6.zip",
 			MountPath: "C:\\Assets\\",
 		},
 	}

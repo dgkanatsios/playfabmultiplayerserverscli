@@ -43,22 +43,14 @@ to quickly create a Cobra application.`,
 func init() {
 	serverCmd.AddCommand(serverRequestCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// requestCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// requestCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	buildIDRequest = serverRequestCmd.Flags().StringP("buildID", "b", "", "BuildID of the Build to be requested")
 }
 
 var buildIDRequest *string
 
 func requestServer(buildID string) error {
-	settings, entityToken := getLoginSettings()
+	settings := getSettings()
+	entityToken := getEntityToken()
 	if buildID == "" {
 		return fmt.Errorf("BuildID cannot be empty")
 	}

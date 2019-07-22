@@ -58,26 +58,25 @@ func createAsset(asset string) error {
 	}
 	// get the filename
 	_, fileName := filepath.Split(asset)
-	settings, entityToken := getLoginSettings()
+	settings := getSettings()
+	entityToken := getEntityToken()
 	getAssetUploadURLRequest := &multiplayer.GetAssetUploadUrlRequestModel{FileName: fileName}
-	//"C:\\projects\\playfabmultiplayerserverscli\\winrunnerSample.zip"
-	//"/mnt/c/projects/playfabmultiplayerserverscli/winrunnerSample.zip"}
+
 	res3, err := multiplayer.GetAssetUploadUrl(settings, getAssetUploadURLRequest, entityToken)
 	if err != nil {
 		return err
 	}
-	log.Printf("%#v", res3)
 
-	file, err := os.Open(res3.FileName)
+	file, err := os.Open(asset)
 	if err != nil {
 		return err
 	}
 	credential := azblob.NewAnonymousCredential()
-	assetUrl, err := url.Parse(res3.AssetUploadUrl)
+	assetURL, err := url.Parse(res3.AssetUploadUrl)
 	if err != nil {
 		return err
 	}
-	url := azblob.NewBlockBlobURL(*assetUrl, azblob.NewPipeline(credential, azblob.PipelineOptions{}))
+	url := azblob.NewBlockBlobURL(*assetURL, azblob.NewPipeline(credential, azblob.PipelineOptions{}))
 	_, err = azblob.UploadFileToBlockBlob(context.Background(), file, url, azblob.UploadToBlockBlobOptions{
 		BlockSize:   4 * 1024 * 1024,
 		Parallelism: 16,

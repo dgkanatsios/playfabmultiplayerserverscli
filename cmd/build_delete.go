@@ -34,7 +34,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := deleteBuild(*buildIDToDelete)
+		err := deleteBuild()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -44,26 +44,19 @@ to quickly create a Cobra application.`,
 func init() {
 	buildCmd.AddCommand(buildDeleteCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	buildIDToDelete = buildDeleteCmd.Flags().StringP("buildID", "b", "", "BuildID of the Build to be deleted")
+	buildDeleteCmd.MarkFlagRequired("buildID")
 }
 
 var buildIDToDelete *string
 
-func deleteBuild(buildID string) error {
-	settings, entityToken := getLoginSettings()
-	if buildID == "" {
+func deleteBuild() error {
+	settings := getSettings()
+	entityToken := getEntityToken()
+	if *buildIDToDelete == "" {
 		return fmt.Errorf("BuildID cannot be empty")
 	}
-	deleteBuildData := &multiplayer.DeleteBuildRequestModel{BuildId: buildID}
+	deleteBuildData := &multiplayer.DeleteBuildRequestModel{BuildId: *buildIDToDelete}
 	_, err := multiplayer.DeleteBuild(settings, deleteBuildData, entityToken)
 	if err != nil {
 		return err

@@ -17,52 +17,43 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"os"
-	"sort"
 
 	"github.com/dgkanatsios/playfabsdk-go/sdk/multiplayer"
 	"github.com/spf13/cobra"
-
-	"text/tabwriter"
 )
 
-// buildListCmd represents the delete command
-var buildListCmd = &cobra.Command{
-	Use:   "list",
+// buildGetCmd represents the delete command
+var buildGetCmd = &cobra.Command{
+	Use:   "get",
 	Short: "lists summarized details of all multiplayer server builds for a title.",
 	Long:  `lists summarized details of all multiplayer server builds for a title.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := listBuilds()
+		err := getBuild()
 		if err != nil {
 			log.Fatal(err)
 		}
 	},
 }
 
+var buildIDToGet *string
+
 func init() {
-	buildCmd.AddCommand(buildListCmd)
+	buildCmd.AddCommand(buildGetCmd)
+
+	buildIDToGet = buildGetCmd.Flags().StringP("buildID", "b", "", "BuildID of the Build to be retrieved")
+	buildGetCmd.MarkFlagRequired("buildID")
 }
 
-func listBuilds() error {
+func getBuild() error {
 	settings := getSettings()
 	entityToken := getEntityToken()
-	listBuildSummariesData := &multiplayer.ListBuildSummariesRequestModel{}
-	res5, err := multiplayer.ListBuildSummaries(settings, listBuildSummariesData, entityToken)
+	getBuildData := &multiplayer.GetBuildRequestModel{BuildId: *buildIDToGet}
+	res5, err := multiplayer.GetBuild(settings, getBuildData, entityToken)
 	if err != nil {
 		return err
 	}
 
-	sort.Slice(res5.BuildSummaries, func(i, j int) bool {
-		return res5.BuildSummaries[i].CreationTime.After(res5.BuildSummaries[j].CreationTime)
-	})
-
-	const padding = 3
-	q := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.AlignRight|tabwriter.Debug)
-	fmt.Fprintf(q, "BuildID\tBuildName\tCreationTime\t\n")
-	for _, bs := range res5.BuildSummaries {
-		fmt.Fprintf(q, "%s\t%s\t%s\n", bs.BuildId, bs.BuildName, bs.CreationTime)
-	}
-	q.Flush()
+	fmt.Println(prettyPrint(res5))
 
 	return nil
 

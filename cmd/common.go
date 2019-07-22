@@ -1,29 +1,17 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 
 	playfab "github.com/dgkanatsios/playfabsdk-go/sdk"
 	"github.com/dgkanatsios/playfabsdk-go/sdk/authentication"
-	"github.com/dgkanatsios/playfabsdk-go/sdk/multiplayer"
 	"github.com/spf13/viper"
 )
 
 const titleIDConfig = "titleID"
 const entityTokenConfig = "token"
-
-func getLoginSettings() (*playfab.Settings, string) {
-	settings := playfab.NewSettingsWithDefaultOptions("titleID")
-	loginData := &authentication.GetEntityTokenRequestModel{}
-
-	res, err := authentication.GetEntityToken(settings, loginData, "", "", "entityToken")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return settings, res.EntityToken
-}
 
 func login(titleID, entityToken string) (string, error) {
 	settings := playfab.NewSettingsWithDefaultOptions(titleID)
@@ -67,12 +55,7 @@ func getEntityToken() string {
 	return token.(string)
 }
 
-func lala() error {
-	settings, entityToken := getLoginSettings()
-	listMultiplayerServerDetails := &multiplayer.ListMultiplayerServersRequestModel{}
-	_, err := multiplayer.ListMultiplayerServers(settings, listMultiplayerServerDetails, entityToken)
-	if err != nil {
-		return err
-	}
-	return nil
+func prettyPrint(i interface{}) string {
+	s, _ := json.MarshalIndent(i, "", "\t")
+	return string(s)
 }

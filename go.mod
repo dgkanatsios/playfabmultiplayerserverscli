@@ -3,6 +3,7 @@ module github.com/dgkanatsios/playfabmultiplayerserverscli
 go 1.12
 
 require (
+	github.com/AlecAivazis/survey/v2 v2.0.1
 	github.com/Azure/azure-storage-blob-go v0.6.0
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/dgkanatsios/playfabsdk-go v0.0.0-20190719075501-f664345409ed
