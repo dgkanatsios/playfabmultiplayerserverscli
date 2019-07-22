@@ -16,7 +16,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "th",
 	Short: "CLI for PlayFab Multiplayer Servers (Thunderhead)",
-	Long: `A console application that acts like a client for Playfab Multiplayer Servers service (aka Thunderhead).`,
+	Long:  `A console application that acts like a client for Playfab Multiplayer Servers service (aka Thunderhead).`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },

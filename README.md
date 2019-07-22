@@ -10,5 +10,11 @@ Uses
 
 Heavy work in progress. No guarantees.
 
+## Supported commands
+
+* th login --title <titleID> --secret <secret key>
+* th server enable
+*
+
 ---
 This is NOT an official Microsoft/PlayFab product.

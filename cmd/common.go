@@ -43,7 +43,7 @@ func login(titleID, entityToken string) (string, error) {
 
 func getSettings() *playfab.Settings {
 	titleID := viper.Get(titleIDConfig)
-	
+
 	if titleID == nil {
 		log.Fatal("Cannot retrieve titleID, you need to login first")
 	}
@@ -55,7 +55,7 @@ func getSettings() *playfab.Settings {
 }
 
 func getEntityToken() string {
-	token:=viper.Get(entityTokenConfig)
+	token := viper.Get(entityTokenConfig)
 
 	if token == nil {
 		log.Fatal("Cannot retrieve entityToken, you need to login first")

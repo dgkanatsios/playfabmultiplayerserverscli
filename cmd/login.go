@@ -49,7 +49,7 @@ to quickly create a Cobra application.`,
 
 		viper.Set(titleIDConfig, titleID)
 		viper.Set(entityTokenConfig, token)
-		
+
 		err = viper.WriteConfig()
 		if err != nil {
 			fmt.Printf("Cannot write config because of %s\n", err)
