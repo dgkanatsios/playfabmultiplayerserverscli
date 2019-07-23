@@ -1,6 +1,5 @@
 #http://blog.wrouesnel.com/articles/Totally%20static%20Go%20builds/
 GOBUILD := go build -a -ldflags '-extldflags "-static"'
-BUILD_ENV := GO111MODULE=on CGO_ENABLED=0
 EXE_NAME := th
 
 
@@ -10,9 +9,9 @@ gofmt:
 
 .PHONY: build
 build: gofmt
-	$(BUILD_ENV) GOOS=darwin GOARCH=386 $(GOBUILD) -o bin/macos/$(EXE_NAME)
-	$(BUILD_ENV) GOOS=linux GOARCH=amd64 $(GOBUILD) -o bin/linux/$(EXE_NAME)
-	$(BUILD_ENV) GOOS=windows GOARCH=386 $(GOBUILD) -o bin/windows/$(EXE_NAME).exe
+	CGO_ENABLED=0 GOOS=darwin GOARCH=386 $(GOBUILD) -o bin/macos/$(EXE_NAME)
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o bin/linux/$(EXE_NAME)
+	CGO_ENABLED=0 GOOS=windows GOARCH=386 $(GOBUILD) -o bin/windows/$(EXE_NAME).exe
 
 .PHONY: goget
 goget:

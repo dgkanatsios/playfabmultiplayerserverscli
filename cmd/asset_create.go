@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/url"
 	"os"
@@ -25,6 +26,8 @@ import (
 	"github.com/dgkanatsios/playfabsdk-go/sdk/multiplayer"
 
 	"github.com/spf13/cobra"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 // createAssetCmd represents the create command
@@ -51,10 +54,10 @@ func init() {
 
 func createAsset(asset string) error {
 	if asset == "" {
-		log.Fatal("Asset path cannot be empty")
+		return errors.New("Asset path cannot be empty")
 	}
 	if !filepath.IsAbs(asset) {
-		log.Fatal("Asset path should be absolute")
+		return errors.New("Asset path should be absolute")
 	}
 	// get the filename
 	_, fileName := filepath.Split(asset)
@@ -71,16 +74,28 @@ func createAsset(asset string) error {
 	if err != nil {
 		return err
 	}
+	fi, err := file.Stat()
+	if err != nil {
+		return err
+	}
+
 	credential := azblob.NewAnonymousCredential()
 	assetURL, err := url.Parse(res3.AssetUploadUrl)
 	if err != nil {
 		return err
 	}
+
+	bar := pb.New64(fi.Size()).Start()
+
 	url := azblob.NewBlockBlobURL(*assetURL, azblob.NewPipeline(credential, azblob.PipelineOptions{}))
 	_, err = azblob.UploadFileToBlockBlob(context.Background(), file, url, azblob.UploadToBlockBlobOptions{
 		BlockSize:   4 * 1024 * 1024,
-		Parallelism: 16,
+		Parallelism: 2,
+		Progress: func(bytesTransferred int64) {
+			bar.SetCurrent(bytesTransferred)
+		},
 	})
+	bar.Finish()
 	if err != nil {
 		return err
 	}

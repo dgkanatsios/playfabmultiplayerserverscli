@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/dgkanatsios/playfabsdk-go/sdk/multiplayer"
@@ -58,7 +59,8 @@ var startCommand *string
 
 var qs = []*survey.Question{
 	{
-		Name: "serversPerVM",
+		Name:     "MultiplayerServerCountPerVm",
+		Validate: survey.Required,
 		Prompt: &survey.Input{
 			Message: "Number of servers per VM",
 			Help:    "Number of servers per VM",
@@ -66,7 +68,8 @@ var qs = []*survey.Question{
 		},
 	},
 	{
-		Name: "buildName",
+		Name:     "BuildName",
+		Validate: survey.Required,
 		Prompt: &survey.Input{
 			Message: "Build name",
 			Help:    "Build name",
@@ -74,54 +77,200 @@ var qs = []*survey.Question{
 		},
 	},
 	{
-		Name: "startCommand",
+		Name:     "StartMultiplayerServerCommand",
+		Validate: survey.Required,
 		Prompt: &survey.Input{
 			Message: "Start MultiplayerServer Command",
 			Help:    "Start MultiplayerServer Command",
 			Default: "C:\\Assets\\WindowsRunnerCSharp.exe",
 		},
 	},
+}
+
+var qsEx = []*survey.Question{
 	{
-		Name: "startCommand",
+		Name:     "VmSize",
+		Validate: survey.Required,
 		Prompt: &survey.Select{
 			Message: "Virtual Machine Size",
 			Help:    "Virtual Machine Size",
-			Options: []string{"Standard_D1_v2", "Standard_D2_v2", "Standard_D3_v2", "Standard_D4_v2", "Standard_D5_v2"},
+			Options: []string{
+				string(multiplayer.AzureVmSizeStandard_D1_v2),
+				string(multiplayer.AzureVmSizeStandard_D2_v2),
+				string(multiplayer.AzureVmSizeStandard_D3_v2),
+				string(multiplayer.AzureVmSizeStandard_D4_v2),
+				string(multiplayer.AzureVmSizeStandard_D5_v2),
+			},
 		},
 	},
 }
 
+var portQ = []*survey.Question{
+	{
+		Name:     "Name",
+		Prompt:   &survey.Input{Message: "Port name?"},
+		Validate: survey.Required,
+	},
+	{
+		Name:     "Num",
+		Prompt:   &survey.Input{Message: "Port number?"},
+		Validate: survey.Required,
+	},
+	{
+		Name: "Protocol",
+		Prompt: &survey.Select{
+			Message: "Port protocol?",
+			Options: []string{
+				string(multiplayer.ProtocolTypeTCP),
+				string(multiplayer.ProtocolTypeUDP),
+			}},
+		Validate: survey.Required,
+	},
+}
+
+var gameAssetQ = []*survey.Question{
+	{
+		Name:     "FileName",
+		Prompt:   &survey.Input{Message: "Game asset Filename?", Default: "winrunnerSample.zip"},
+		Validate: survey.Required,
+	},
+	{
+		Name:     "MountPath",
+		Prompt:   &survey.Input{Message: "Game asset Mountpath?", Default: "C:\\Assets\\"},
+		Validate: survey.Required,
+	},
+}
+
+var buildRegionQ = []*survey.Question{
+	{
+		Name:     "MaxServers",
+		Prompt:   &survey.Input{Message: "MaxServers?", Default: "1"},
+		Validate: survey.Required,
+	},
+	{
+		Name:     "StandbyServers",
+		Prompt:   &survey.Input{Message: "StandbyServers?", Default: "1"},
+		Validate: survey.Required,
+	},
+	{
+		Name: "Region",
+		Prompt: &survey.Select{
+			Message: "Region?",
+			Options: []string{
+				string(multiplayer.AzureRegionAustraliaEast),
+				string(multiplayer.AzureRegionAustraliaSoutheast),
+				string(multiplayer.AzureRegionBrazilSouth),
+				string(multiplayer.AzureRegionCentralUs),
+				string(multiplayer.AzureRegionEastAsia),
+				string(multiplayer.AzureRegionEastUs),
+				string(multiplayer.AzureRegionEastUs2),
+				string(multiplayer.AzureRegionWestUs),
+			}},
+		Validate: survey.Required,
+	},
+}
+
 func createBuild() error {
-	settings := getSettings()
-	entityToken := getEntityToken()
-	createBuildData := &multiplayer.CreateBuildWithManagedContainerRequestModel{
-		MultiplayerServerCountPerVm: 1,
-	}
-	createBuildData.Ports = []multiplayer.PortModel{multiplayer.PortModel{
-		Name:     "game_port",
-		Num:      3600,
-		Protocol: multiplayer.ProtocolTypeTCP,
-	}}
-	createBuildData.BuildName = "golangTest"
-	createBuildData.GameAssetReferences = []multiplayer.AssetReferenceParamsModel{
-		multiplayer.AssetReferenceParamsModel{
-			FileName:  "winrunnerSample6.zip",
-			MountPath: "C:\\Assets\\",
-		},
-	}
-	createBuildData.RegionConfigurations = []multiplayer.BuildRegionParamsModel{
-		multiplayer.BuildRegionParamsModel{
-			MaxServers:     1,
-			StandbyServers: 1,
-			Region:         multiplayer.AzureRegionEastUs,
-		},
-	}
-	createBuildData.StartMultiplayerServerCommand = "C:\\Assets\\WindowsRunnerCSharp.exe"
-	createBuildData.VmSize = multiplayer.AzureVmSizeStandard_D2_v2
-	res4, err := multiplayer.CreateBuildWithManagedContainer(settings, createBuildData, entityToken)
+	data := &multiplayer.CreateBuildWithManagedContainerRequestModel{}
+
+	err := survey.Ask(qs, data)
 	if err != nil {
 		return err
 	}
-	log.Printf("%#v", res4)
+
+	qsExRes := struct {
+		VmSize string
+	}{}
+
+	err = survey.Ask(qsEx, &qsExRes)
+	if err != nil {
+		return err
+	}
+
+	data.VmSize = multiplayer.AzureVmSize(qsExRes.VmSize)
+
+	data.Ports = []multiplayer.PortModel{}
+	for {
+		portEx := struct {
+			Name     string
+			Num      int32
+			Protocol string
+		}{}
+
+		survey.Ask(portQ, &portEx)
+
+		port := multiplayer.PortModel{}
+		port.Name = portEx.Name
+		port.Num = portEx.Num
+		port.Protocol = multiplayer.ProtocolType(portEx.Protocol)
+		data.Ports = append(data.Ports, port)
+
+		addAnotherPort := false
+		if err := survey.AskOne(&survey.Confirm{
+			Message: "Add another port?",
+		}, &addAnotherPort); err != nil {
+			return err
+		}
+
+		if !addAnotherPort {
+			break
+		}
+	}
+
+	data.GameAssetReferences = []multiplayer.AssetReferenceParamsModel{}
+	for {
+		gameAssetEx := multiplayer.AssetReferenceParamsModel{}
+		survey.Ask(gameAssetQ, &gameAssetEx)
+
+		data.GameAssetReferences = append(data.GameAssetReferences, gameAssetEx)
+
+		addAnotherGameAssetReference := false
+		if err := survey.AskOne(&survey.Confirm{
+			Message: "Add another game asset reference?",
+		}, &addAnotherGameAssetReference); err != nil {
+			return err
+		}
+
+		if !addAnotherGameAssetReference {
+			break
+		}
+	}
+
+	data.RegionConfigurations = []multiplayer.BuildRegionParamsModel{}
+	for {
+		buildRegionEx := struct {
+			MaxServers     int32
+			StandbyServers int32
+			Region         string
+		}{}
+
+		survey.Ask(buildRegionQ, &buildRegionEx)
+
+		buildRegion := multiplayer.BuildRegionParamsModel{}
+		buildRegion.MaxServers = buildRegionEx.MaxServers
+		buildRegion.StandbyServers = buildRegionEx.StandbyServers
+		buildRegion.Region = multiplayer.AzureRegion(buildRegionEx.Region)
+		data.RegionConfigurations = append(data.RegionConfigurations, buildRegion)
+
+		addAnotherRegion := false
+		if err := survey.AskOne(&survey.Confirm{
+			Message: "Add another region?",
+		}, &addAnotherRegion); err != nil {
+			return err
+		}
+
+		if !addAnotherRegion {
+			break
+		}
+	}
+
+	settings := getSettings()
+	entityToken := getEntityToken()
+
+	res4, err := multiplayer.CreateBuildWithManagedContainer(settings, data, entityToken)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%#v", res4)
 	return nil
 }

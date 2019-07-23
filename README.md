@@ -12,13 +12,15 @@ Heavy work in progress. No guarantees. Why Go? Because cross compilation to nati
 
 ## Supported commands
 
-* th login --title <titleID> --secret <secret key> // or th login - <titleID> -s <secret key>
+* th login --title <titleID> --secret <secret key> // or th login -t <titleID> -s <secret key>
 * th server enable
 * th asset create -f c:\winrunnerSample6.zip
 * th asset delete winrunnerSample6.zip
+* th asset list
 * th build list
 * th build get -b <buildID>
 * th build delete -b <buildID>
+* th build create
 
 ---
 This is NOT an official Microsoft/PlayFab product.
